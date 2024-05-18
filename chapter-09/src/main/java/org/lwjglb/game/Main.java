@@ -7,6 +7,7 @@ import org.lwjglb.engine.scene.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import benchmark.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -38,11 +39,10 @@ public class Main implements IAppLogic {
         Main main = new Main();
         main.runMain();
 
-
     }
 
 
-    public void runMain()
+    public BenchmarkInfo runMain()
     {
         Main main=new Main();
         int totalRuns = 10;
@@ -73,6 +73,9 @@ public class Main implements IAppLogic {
         }
 
         System.out.println("Final score:"+calculateFinalSCore(allFpsValues));
+        BenchmarkInfo Benchy=new BenchmarkInfo("GPU bencmark",calculateFinalSCore(allFpsValues),10000);
+
+        return Benchy;
     }
 
     public void setNrOfCubesToGenerate(int nr)
