@@ -2,6 +2,7 @@ package org.lwjglb.engine.scene;
 
 import org.lwjglb.engine.IGuiInstance;
 import org.lwjglb.engine.graph.*;
+import org.lwjglb.engine.scene.lights.SceneLights;
 
 import java.util.*;
 
@@ -13,6 +14,7 @@ public class Scene {
     private TextureCache textureCache;
 
     private IGuiInstance guiInstance;
+    private SceneLights sceneLights;
 
     public Scene(int width, int height) {
         modelMap = new HashMap<>();
@@ -32,6 +34,10 @@ public class Scene {
 
     public IGuiInstance getGuiInstance() {
         return guiInstance;
+    }
+
+    public SceneLights getSceneLights() {
+        return sceneLights;
     }
 
     public void addModel(Model model) {
@@ -64,5 +70,9 @@ public class Scene {
 
     public void setGuiInstance(IGuiInstance guiInstance) {
         this.guiInstance = guiInstance;
+    }
+
+    public void setSceneLights(SceneLights sceneLights) {
+        this.sceneLights = sceneLights;
     }
 }

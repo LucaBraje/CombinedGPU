@@ -4,6 +4,7 @@ import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.flag.ImGuiCond;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.lwjglb.engine.*;
 import org.lwjglb.engine.graph.*;
 import org.lwjglb.engine.scene.*;
@@ -11,10 +12,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import benchmark.*;
+import org.lwjglb.engine.scene.lights.PointLight;
+import org.lwjglb.engine.scene.lights.SceneLights;
+import org.lwjglb.engine.scene.lights.SpotLight;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Main implements IAppLogic, IGuiInstance {
+public class Main implements IAppLogic{
 
     private static final float MOUSE_SENSITIVITY = 0.1f;
     private static final float MOVEMENT_SPEED = 0.005f;
@@ -37,6 +41,8 @@ public class Main implements IAppLogic, IGuiInstance {
     private final long cubeGenerationInterval = 1000; // 2000 milliseconds = 2 second
 
     private float rotation;
+
+    private LightControls lightControls;
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -118,17 +124,27 @@ public class Main implements IAppLogic, IGuiInstance {
     }
     @Override
     public void init(Window window, Scene scene, Render render) {
-         cubeModel = ModelLoader.loadModel("cube-model", "resources/models/cube/cube.obj",
+        Model cubeModel = ModelLoader.loadModel("cube-model", "resources/models/cube/cube.obj",
                 scene.getTextureCache());
         scene.addModel(cubeModel);
 
+        cubeEntity = new Entity("cube-entity", cubeModel.getId());
+        cubeEntity.setPosition(0, 0f, -10);
+        cubeEntity.updateModelMatrix();
+        scene.addEntity(cubeEntity);
 
+        SceneLights sceneLights = new SceneLights();
+        sceneLights.getAmbientLight().setIntensity(0.3f);
+        scene.setSceneLights(sceneLights);
+        sceneLights.getPointLights().add(new PointLight(new Vector3f(1, 1, 1),
+                new Vector3f(0, 0, -1.4f), 1.0f));
 
-        cubeEntity2 = new Entity("cube-entity2", cubeModel.getId());
-        cubeEntity2.setPosition(0, 0, -10);
-        scene.addEntity(cubeEntity2);
-        lastCubeGenerationTime = System.currentTimeMillis();
-        NrOfCubes++;
+        Vector3f coneDir = new Vector3f(0, 0, -1);
+        sceneLights.getSpotLights().add(new SpotLight(new PointLight(new Vector3f(1, 1, 1),
+                new Vector3f(0, 0, -1.4f), 0.0f), coneDir, 140.0f));
+
+        lightControls = new LightControls(scene);
+        scene.setGuiInstance(lightControls);
 
         /*
                cubeEntity = new Entity("cube-entity", cubeModel.getId());
@@ -141,8 +157,11 @@ public class Main implements IAppLogic, IGuiInstance {
         scene.addEntity(cubeEntity3);
         lastCubeGenerationTime = System.currentTimeMillis();
 */
+        lastCubeGenerationTime = System.currentTimeMillis();
+        NrOfCubes++;
+
         //cubes.add(cubeEntity);
-        cubes.add(cubeEntity2);
+        cubes.add(cubeEntity);
         //cubes.add(cubeEntity3);
     }
 
@@ -215,24 +234,4 @@ public class Main implements IAppLogic, IGuiInstance {
         }
     }
 
-    @Override
-    public void drawGui() {
-        ImGui.newFrame();
-        ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
-        ImGui.showDemoWindow();
-        ImGui.endFrame();
-        ImGui.render();
-    }
-
-    @Override
-    public boolean handleGuiInput(Scene scene, Window window) {
-        ImGuiIO imGuiIO = ImGui.getIO();
-        MouseInput mouseInput = window.getMouseInput();
-        Vector2f mousePos = mouseInput.getCurrentPos();
-        imGuiIO.setMousePos(mousePos.x, mousePos.y);
-        imGuiIO.setMouseDown(0, mouseInput.isLeftButtonPressed());
-        imGuiIO.setMouseDown(1, mouseInput.isRightButtonPressed());
-
-        return imGuiIO.getWantCaptureMouse() || imGuiIO.getWantCaptureKeyboard();
-    }
 }
