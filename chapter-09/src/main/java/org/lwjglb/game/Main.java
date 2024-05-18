@@ -1,5 +1,8 @@
 package org.lwjglb.game;
 
+import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiCond;
 import org.joml.Vector2f;
 import org.lwjglb.engine.*;
 import org.lwjglb.engine.graph.*;
@@ -11,7 +14,7 @@ import benchmark.*;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Main implements IAppLogic {
+public class Main implements IAppLogic, IGuiInstance {
 
     private static final float MOUSE_SENSITIVITY = 0.1f;
     private static final float MOVEMENT_SPEED = 0.005f;
@@ -45,13 +48,12 @@ public class Main implements IAppLogic {
     public BenchmarkInfo runMain()
     {
         Main main=new Main();
-        int totalRuns = 10;
-        int batchSize = 5;
+        int totalRuns = 2;
+        int batchSize = 1;
         List<Double> allFpsValues = new ArrayList<>();
 
-
         for (int i = 0; i < totalRuns; i++) {
-            Engine gameEng = new Engine("GPU-Benchmark:"+(i+1)+"/10", new Window.WindowOptions(), main, i + 1);
+            Engine gameEng = new Engine("GPU-Benchmark:"+(i+1)+"/"+totalRuns, new Window.WindowOptions(), main, i + 1);
             gameEng.start();
             allFpsValues.addAll(gameEng.getFpsList());
             gameEng.stop();
@@ -128,8 +130,6 @@ public class Main implements IAppLogic {
         lastCubeGenerationTime = System.currentTimeMillis();
         NrOfCubes++;
 
-
-
         /*
                cubeEntity = new Entity("cube-entity", cubeModel.getId());
         cubeEntity.setPosition(10, -5, -10);
@@ -147,7 +147,10 @@ public class Main implements IAppLogic {
     }
 
     @Override
-    public void input(Window window, Scene scene, long diffTimeMillis) {
+    public void input(Window window, Scene scene, long diffTimeMillis, boolean inputConsumed) {
+        if (inputConsumed) {
+            return;
+        }
   /*      float move = diffTimeMillis * MOVEMENT_SPEED;
         Camera camera = scene.getCamera();
         if (window.isKeyPressed(GLFW_KEY_W)) {
@@ -210,5 +213,26 @@ public class Main implements IAppLogic {
                 cubes.add(cubeEntity4);
             }
         }
+    }
+
+    @Override
+    public void drawGui() {
+        ImGui.newFrame();
+        ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
+        ImGui.showDemoWindow();
+        ImGui.endFrame();
+        ImGui.render();
+    }
+
+    @Override
+    public boolean handleGuiInput(Scene scene, Window window) {
+        ImGuiIO imGuiIO = ImGui.getIO();
+        MouseInput mouseInput = window.getMouseInput();
+        Vector2f mousePos = mouseInput.getCurrentPos();
+        imGuiIO.setMousePos(mousePos.x, mousePos.y);
+        imGuiIO.setMouseDown(0, mouseInput.isLeftButtonPressed());
+        imGuiIO.setMouseDown(1, mouseInput.isRightButtonPressed());
+
+        return imGuiIO.getWantCaptureMouse() || imGuiIO.getWantCaptureKeyboard();
     }
 }

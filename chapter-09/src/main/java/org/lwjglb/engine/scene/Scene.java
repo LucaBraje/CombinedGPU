@@ -1,5 +1,6 @@
 package org.lwjglb.engine.scene;
 
+import org.lwjglb.engine.IGuiInstance;
 import org.lwjglb.engine.graph.*;
 
 import java.util.*;
@@ -10,6 +11,8 @@ public class Scene {
     private Map<String, Model> modelMap;
     private Projection projection;
     private TextureCache textureCache;
+
+    private IGuiInstance guiInstance;
 
     public Scene(int width, int height) {
         modelMap = new HashMap<>();
@@ -25,6 +28,10 @@ public class Scene {
             throw new RuntimeException("Could not find model [" + modelId + "]");
         }
         model.getEntitiesList().add(entity);
+    }
+
+    public IGuiInstance getGuiInstance() {
+        return guiInstance;
     }
 
     public void addModel(Model model) {
@@ -53,5 +60,9 @@ public class Scene {
 
     public void resize(int width, int height) {
         projection.updateProjMatrix(width, height);
+    }
+
+    public void setGuiInstance(IGuiInstance guiInstance) {
+        this.guiInstance = guiInstance;
     }
 }
