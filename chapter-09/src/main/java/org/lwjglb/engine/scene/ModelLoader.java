@@ -123,6 +123,14 @@ public class ModelLoader {
                 material.setDiffuseColor(Material.DEFAULT_COLOR);
             }
 
+            AIString aiNormalMapPath = AIString.calloc(stack);
+            Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_NORMALS, 0, aiNormalMapPath, (IntBuffer) null,
+                    null, null, null, null, null);
+            String normalMapPath = aiNormalMapPath.dataString();
+            if (normalMapPath != null && normalMapPath.length() > 0) {
+                material.setNormalMapPath(modelDir + File.separator + new File(normalMapPath).getName());
+                textureCache.createTexture(material.getNormalMapPath());
+            }
             return material;
         }
     }
@@ -133,13 +141,16 @@ public class ModelLoader {
         float[] textCoords = processTextCoords(aiMesh);
         int[] indices = processIndices(aiMesh);
 
+        float[] tangents = processTangents(aiMesh, normals);
+        float[] bitangents = processBitangents(aiMesh, normals);
+
         // Texture coordinates may not have been populated. We need at least the empty slots
         if (textCoords.length == 0) {
             int numElements = (vertices.length / 3) * 2;
             textCoords = new float[numElements];
         }
 
-        return new Mesh(vertices, normals, textCoords, indices);
+        return new Mesh(vertices, normals, tangents, bitangents, textCoords, indices);
     }
 
     private static float[] processNormals(AIMesh aiMesh) {
@@ -179,6 +190,44 @@ public class ModelLoader {
             data[pos++] = textCoord.x();
             data[pos++] = textCoord.y();
             data[pos++] = textCoord.z();
+        }
+        return data;
+    }
+
+    private static float[] processBitangents(AIMesh aiMesh, float[] normals) {
+
+        AIVector3D.Buffer buffer = aiMesh.mBitangents();
+        float[] data = new float[buffer.remaining() * 3];
+        int pos = 0;
+        while (buffer.remaining() > 0) {
+            AIVector3D aiBitangent = buffer.get();
+            data[pos++] = aiBitangent.x();
+            data[pos++] = aiBitangent.y();
+            data[pos++] = aiBitangent.z();
+        }
+
+        // Assimp may not calculate tangents with models that do not have texture coordinates. Just create empty values
+        if (data.length == 0) {
+            data = new float[normals.length];
+        }
+        return data;
+    }
+
+    private static float[] processTangents(AIMesh aiMesh, float[] normals) {
+
+        AIVector3D.Buffer buffer = aiMesh.mTangents();
+        float[] data = new float[buffer.remaining() * 3];
+        int pos = 0;
+        while (buffer.remaining() > 0) {
+            AIVector3D aiTangent = buffer.get();
+            data[pos++] = aiTangent.x();
+            data[pos++] = aiTangent.y();
+            data[pos++] = aiTangent.z();
+        }
+
+        // Assimp may not calculate tangents with models that do not have texture coordinates. Just create empty values
+        if (data.length == 0) {
+            data = new float[normals.length];
         }
         return data;
     }

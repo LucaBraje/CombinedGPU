@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import benchmark.*;
+import org.lwjglb.engine.scene.lights.DirLight;
 import org.lwjglb.engine.scene.lights.PointLight;
 import org.lwjglb.engine.scene.lights.SceneLights;
 import org.lwjglb.engine.scene.lights.SpotLight;
@@ -42,6 +43,7 @@ public class Main implements IAppLogic {
     private static int total_no_cubes=0;
 
     private float rotation;
+    private float lightAngle;
 
     public static void main(String[] args) {
         Main main = new Main();
@@ -168,9 +170,11 @@ public class Main implements IAppLogic {
         scene.setSkyBox(skyBox);
 
         //fog on objects
-        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.015f));
+        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.01f));
 
         scene.getCamera().moveUp(0.1f);
+
+        lightAngle = -35;
 
         updateTerrain(scene);
     }
@@ -193,12 +197,29 @@ public class Main implements IAppLogic {
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
             camera.moveRight(move);
         }
+        if (window.isKeyPressed(GLFW_KEY_LEFT)) {
+            lightAngle -= 2.5f;
+            if (lightAngle < -90) {
+                lightAngle = -90;
+            }
+        } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
+            lightAngle += 2.5f;
+            if (lightAngle > 90) {
+                lightAngle = 90;
+            }
+        }
 
         MouseInput mouseInput = window.getMouseInput();
         if (mouseInput.isRightButtonPressed()) {
             Vector2f displVec = mouseInput.getDisplVec();
             camera.addRotation((float) Math.toRadians(-displVec.x * MOUSE_SENSITIVITY), (float) Math.toRadians(-displVec.y * MOUSE_SENSITIVITY));
         }
+
+        SceneLights sceneLights = scene.getSceneLights();
+        DirLight dirLight = sceneLights.getDirLight();
+        double angRad = Math.toRadians(lightAngle);
+        dirLight.getDirection().x = (float) Math.sin(angRad);
+        dirLight.getDirection().y = (float) Math.cos(angRad);
     }
 
     @Override
