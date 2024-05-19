@@ -135,6 +135,9 @@ public class Main implements IAppLogic {
         Vector3f coneDir = new Vector3f(0, 0, -1);
         sceneLights.getSpotLights().add(new SpotLight(new PointLight(new Vector3f(1, 1, 1), new Vector3f(0, 0, -1.4f), 0.0f), coneDir, 140.0f));
 
+        /*
+        GUI FOR LIGHTS
+         */
         lightControls = new LightControls(scene);
         //scene.setGuiInstance(lightControls); //gui for lights
 
@@ -164,8 +167,8 @@ public class Main implements IAppLogic {
         skyBox.getSkyBoxEntity().setScale(50);
         scene.setSkyBox(skyBox);
 
-        //the fog is applied to the cube so it's not working properly
-        //scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.95f));
+        //fog on objects
+        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.015f));
 
         scene.getCamera().moveUp(0.1f);
 
