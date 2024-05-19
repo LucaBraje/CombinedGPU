@@ -17,12 +17,16 @@ import org.lwjglb.engine.scene.lights.SceneLights;
 import org.lwjglb.engine.scene.lights.SpotLight;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11C.*;
 
 public class Main implements IAppLogic {
 
     private static final float MOUSE_SENSITIVITY = 0.1f;
     private static final float MOVEMENT_SPEED = 0.005f;
     private static final long CUBE_GENERATION_INTERVAL = 1000;
+
+    private static final int NUM_CHUNKS = 4;
+    private Entity[][] terrainEntities;
 
     private int nrOfCubesToGenerate = 10000;
     private int frameCount = 0;
@@ -45,7 +49,7 @@ public class Main implements IAppLogic {
 
     public BenchmarkInfo runMain() {
         Main main = new Main();
-        int totalRuns = 2;
+        int totalRuns = 5;
         int batchSize = 1;
         List<Double> allFpsValues = new ArrayList<>();
 
@@ -108,6 +112,9 @@ public class Main implements IAppLogic {
 
     @Override
     public void init(Window window, Scene scene, Render render) {
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
         cubeModel = ModelLoader.loadModel("cube-model", "resources/models/cube/cube.obj", scene.getTextureCache());
         scene.addModel(cubeModel);
 
@@ -131,7 +138,34 @@ public class Main implements IAppLogic {
         lastCubeGenerationTime = System.currentTimeMillis();
         nrOfCubes++;
         cubes.add(cubeEntity);
+
+        String quadModelId = "quad-model";
+        Model quadModel = ModelLoader.loadModel("quad-model", "resources/models/quad/quad.obj", scene.getTextureCache());
+        scene.addModel(quadModel);
+
+        int numRows = NUM_CHUNKS * 2 + 1;
+        int numCols = numRows;
+        terrainEntities = new Entity[numRows][numCols];
+        for (int j = 0; j < numRows; j++) {
+            for (int i = 0; i < numCols; i++) {
+                Entity entity = new Entity("TERRAIN_" + j + "_" + i, quadModelId);
+                // Adjust Y position to be lower than the cubes
+                entity.setPosition((j - NUM_CHUNKS) * 10, -10, (i - NUM_CHUNKS) * 10);
+                terrainEntities[j][i] = entity;
+                scene.addEntity(entity);
+            }
+        }
+
+        // Initialize skybox
+        SkyBox skyBox = new SkyBox("resources/models/skybox/skybox.obj", scene.getTextureCache());
+        skyBox.getSkyBoxEntity().setScale(50);
+        scene.setSkyBox(skyBox);
+
+        scene.getCamera().moveUp(0.1f);
+
+        updateTerrain(scene);
     }
+
 
     @Override
     public void input(Window window, Scene scene, long diffTimeMillis, boolean inputConsumed) {
@@ -150,11 +184,6 @@ public class Main implements IAppLogic {
         } else if (window.isKeyPressed(GLFW_KEY_D)) {
             camera.moveRight(move);
         }
-        if (window.isKeyPressed(GLFW_KEY_UP)) {
-            camera.moveUp(move);
-        } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
-            camera.moveDown(move);
-        }
 
         MouseInput mouseInput = window.getMouseInput();
         if (mouseInput.isRightButtonPressed()) {
@@ -165,6 +194,7 @@ public class Main implements IAppLogic {
 
     @Override
     public void update(Window window, Scene scene, long diffTimeMillis) {
+        updateTerrain(scene);
         rotation += 1.5;
         if (rotation > 360) {
             rotation = 0;
@@ -179,6 +209,30 @@ public class Main implements IAppLogic {
         if (currentTime - lastCubeGenerationTime >= CUBE_GENERATION_INTERVAL) {
             generateCubes(scene);
             lastCubeGenerationTime = currentTime;
+        }
+    }
+
+    public void updateTerrain(Scene scene) {
+        int cellSize = 10;
+        Camera camera = scene.getCamera();
+        Vector3f cameraPos = camera.getPosition();
+        int cellCol = (int) (cameraPos.x / cellSize);
+        int cellRow = (int) (cameraPos.z / cellSize);
+
+        int numRows = NUM_CHUNKS * 2 + 1;
+        int numCols = numRows;
+        int zOffset = -NUM_CHUNKS;
+        float scale = cellSize / 2.0f;
+        for (int j = 0; j < numRows; j++) {
+            int xOffset = -NUM_CHUNKS;
+            for (int i = 0; i < numCols; i++) {
+                Entity entity = terrainEntities[j][i];
+                entity.setScale(scale);
+                entity.setPosition((cellCol + xOffset) * 2.0f, -10, (cellRow + zOffset) * 2.0f); // Y position set to -10
+                entity.getModelMatrix().identity().scale(scale).translate(entity.getPosition());
+                xOffset++;
+            }
+            zOffset++;
         }
     }
 
