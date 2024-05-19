@@ -55,17 +55,12 @@
             <type>pom</type>
         </dependency>
 
-
         <!-- https://mvnrepository.com/artifact/com.google.firebase/firebase-firestore -->
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-firestore</artifactId>
             <version>25.0.0</version>
         </dependency>
-
-
-
-
 
         <dependency>
             <groupId>org.tinylog</groupId>
