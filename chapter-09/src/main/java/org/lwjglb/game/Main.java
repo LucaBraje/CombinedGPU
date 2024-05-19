@@ -49,8 +49,8 @@ public class Main implements IAppLogic {
 
     public BenchmarkInfo runMain() {
         Main main = new Main();
-        int totalRuns = 5;
-        int batchSize = 1;
+        int totalRuns = 6;
+        int batchSize = 2;
         List<Double> allFpsValues = new ArrayList<>();
 
         for (int i = 0; i < totalRuns; i++) {
@@ -133,7 +133,7 @@ public class Main implements IAppLogic {
         sceneLights.getSpotLights().add(new SpotLight(new PointLight(new Vector3f(1, 1, 1), new Vector3f(0, 0, -1.4f), 0.0f), coneDir, 140.0f));
 
         lightControls = new LightControls(scene);
-        scene.setGuiInstance(lightControls);
+        //scene.setGuiInstance(lightControls); //gui for lights
 
         lastCubeGenerationTime = System.currentTimeMillis();
         nrOfCubes++;
@@ -160,6 +160,9 @@ public class Main implements IAppLogic {
         SkyBox skyBox = new SkyBox("resources/models/skybox/skybox.obj", scene.getTextureCache());
         skyBox.getSkyBoxEntity().setScale(50);
         scene.setSkyBox(skyBox);
+
+        //the fog is applied to the cube so it's not working properly
+        //scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.95f));
 
         scene.getCamera().moveUp(0.1f);
 

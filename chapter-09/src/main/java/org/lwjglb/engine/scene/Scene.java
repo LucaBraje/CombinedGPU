@@ -16,12 +16,14 @@ public class Scene {
     private IGuiInstance guiInstance;
     private SceneLights sceneLights;
     private SkyBox skyBox;
+    private Fog fog;
 
     public Scene(int width, int height) {
         modelMap = new HashMap<>();
         projection = new Projection(width, height);
         textureCache = new TextureCache();
         camera = new Camera();
+        fog = new Fog();
     }
 
     public void addEntity(Entity entity) {
@@ -43,6 +45,10 @@ public class Scene {
 
     public SkyBox getSkyBox() {
         return skyBox;
+    }
+
+    public Fog getFog() {
+        return fog;
     }
 
     public void addModel(Model model) {
@@ -83,5 +89,9 @@ public class Scene {
 
     public void setSkyBox(SkyBox skyBox) {
         this.skyBox = skyBox;
+    }
+
+    public void setFog(Fog fog) {
+        this.fog = fog;
     }
 }
