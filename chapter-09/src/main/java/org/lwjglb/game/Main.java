@@ -39,6 +39,7 @@ public class Main implements IAppLogic {
 
     private static List<Entity> cubes = new ArrayList<>();
     private static int nrOfCubes = 0;
+    private static int total_no_cubes=0;
 
     private float rotation;
 
@@ -58,18 +59,20 @@ public class Main implements IAppLogic {
             gameEng.start();
             allFpsValues.addAll(gameEng.getFpsList());
             gameEng.stop();
+            System.out.println("Number of generated cubes:  "+total_no_cubes);
+            total_no_cubes=0;
             cubes.clear();
             nrOfCubes = 0;
 
             if ((i + 1) % batchSize == 0) {
                 List<Double> fpsBatch = allFpsValues.subList(i + 1 - batchSize, i + 1);
                 double averageFps = calculateAverage(fpsBatch);
-                System.out.println("Average FPS after " + (i + 1) + " runs: " + averageFps + "\n");
+                System.out.println("\nAverage FPS after " + (i + 1) + " runs: " + averageFps);
             }
         }
 
         double finalScore = calculateFinalScore(allFpsValues);
-        System.out.println("Final score: " + finalScore);
+        System.out.println("\nFinal score: " + finalScore);
         return new BenchmarkInfo("GPU benchmark", finalScore, nrOfCubesToGenerate);
     }
 
@@ -242,6 +245,7 @@ public class Main implements IAppLogic {
     private void generateCubes(Scene scene) {
         for (int i = 0; i < nrOfCubesToGenerate; i++) {
             nrOfCubes++;
+            total_no_cubes=nrOfCubes;
             float x = (float) Math.random() * 21 - 11;  // Random between -11 to 10
             float y = (float) Math.random() * 12 - 6;  // Random between -6 to 5
             float z = (float) Math.random() * 20 - 30; // Random between -30 to -10

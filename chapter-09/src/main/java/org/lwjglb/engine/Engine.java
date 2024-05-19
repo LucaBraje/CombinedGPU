@@ -57,7 +57,7 @@ public class Engine {
     }
 
     private void run() {
-        System.out.println("Running Benchmark - Run #" + runNumber);
+        System.out.println("\nRunning Benchmark - Run #" + runNumber);
         GLFW.glfwSwapInterval(0); // Disable VSync
 
         // Benchmarking variables
